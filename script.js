@@ -24,7 +24,33 @@ Step 2: VIEW GEOJSON POINT DATA ON MAP
 //      Use the fetch method to access the GeoJSON from your online repository
 //      Convert the response to JSON format and then store the response in your new variable
 
+// Fetch GeoJSON from URL and store response
+fetch('https://raw.githubusercontent.com/ananmaysharan/ggr472-lab4/main/data/pedcyc_collision_06-21.geojson')
+    .then(response => response.json())
+    .then(response => {
+        console.log(response); //Check response in console
+        collisiongeojson = response; // Store geojson as variable using URL from fetch response
+    });
 
+    map.on('load', () => {
+
+        //Add datasource using GeoJSON variable
+        map.addSource('toronto-col', {
+            type: 'geojson',
+            data: collisiongeojson
+        });
+    
+        map.addLayer({
+            'id': 'toronto-col-pnts',
+            'type': 'circle',
+            'source': 'toronto-col',
+            'paint': {
+                'circle-radius': 5,
+                'circle-color': 'blue'
+            }
+        });
+    
+    });
 
 /*--------------------------------------------------------------------
     Step 3: CREATE BOUNDING BOX AND HEXGRID
