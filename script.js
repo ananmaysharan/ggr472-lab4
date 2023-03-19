@@ -14,25 +14,36 @@ const map = new mapboxgl.Map({
     container: 'map', //container id in HTML
     style: 'mapbox://styles/mapbox/dark-v11',  //****ADD MAP STYLE HERE *****
     center: [-79.39, 43.65],  // starting point, longitude/latitude
-    zoom: 12 // starting zoom level
+    zoom: 9 // starting zoom level
 });
-
-/*--------------------------------------------------------------------
-Step 2: VIEW GEOJSON POINT DATA ON MAP
---------------------------------------------------------------------*/
-//HINT: Create an empty variable
-//      Use the fetch method to access the GeoJSON from your online repository
-//      Convert the response to JSON format and then store the response in your new variable
 
 // Fetch GeoJSON from URL and store response
 fetch('https://raw.githubusercontent.com/ananmaysharan/ggr472-lab4/main/data/pedcyc_collision_06-21.geojson')
     .then(response => response.json())
     .then(response => {
-        console.log(response); //Check response in console
+        // console.log(response); //Check response in console
         collisiongeojson = response; // Store geojson as variable using URL from fetch response
     });
 
     map.on('load', () => {
+
+        bbox = turf.envelope(collisiongeojson)
+
+        bboxTransformed = turf.transformScale(bbox, 1.1)
+
+        bboxgeojson = {
+        "type":"FeatureCollection",
+        "features":[bboxTransformed]
+        }
+
+        const minX = bboxTransformed.geometry.coordinates[0][0][0];
+        const minY = bboxTransformed.geometry.coordinates[0][0][1];
+        const maxX = bboxTransformed.geometry.coordinates[0][2][0];
+        const maxY = bboxTransformed.geometry.coordinates[0][2][1];
+
+        let bboxcords = [minX,minY,maxX,maxY]
+
+        const hexgrid = turf.hexGrid(bboxcords, 0.5, {units: 'kilometres'});
 
         //Add datasource using GeoJSON variable
         map.addSource('toronto-col', {
@@ -49,18 +60,41 @@ fetch('https://raw.githubusercontent.com/ananmaysharan/ggr472-lab4/main/data/ped
                 'circle-color': 'blue'
             }
         });
-    
-    });
 
-/*--------------------------------------------------------------------
-    Step 3: CREATE BOUNDING BOX AND HEXGRID
---------------------------------------------------------------------*/
-//HINT: All code to create and view the hexgrid will go inside a map load event handler
-//      First create a bounding box around the collision point data then store as a feature collection variable
-//      Access and store the bounding box coordinates as an array variable
-//      Use bounding box coordinates as argument in the turf hexgrid function
+// map.addSource('collis-bbox', {
+//     type:'geojson',
+//     data: bboxgeojson
+// });
 
+// map.addLayer({
+//     'id': 'collis-bbox',
+//     'type':'fill',
+//     'source':'collis-bbox',
+//     'paint':
+//      {
+//         'fill-color': "#fff",
+//         'fill-opacity':0.5
+//      }
+// });
 
+// console.log(bboxTransformed)
+// console.log(bboxgeojson)
+
+map.addSource('collis-hexgrid', {
+    type:'geojson',
+    data: hexgrid
+});
+
+map.addLayer({
+    'id': 'collis-hexgrid',
+    'type':'fill',
+    'source':'collis-hexgrid',
+    'paint':
+     {
+        'fill-color': "#fff",
+        'fill-opacity':0.5
+     }
+});
 
 /*--------------------------------------------------------------------
 Step 4: AGGREGATE COLLISIONS BY HEXGRID
@@ -68,6 +102,20 @@ Step 4: AGGREGATE COLLISIONS BY HEXGRID
 //HINT: Use Turf collect function to collect all '_id' properties from the collision points data for each heaxagon
 //      View the collect output in the console. Where there are no intersecting points in polygons, arrays will be empty
 
+let collishex = turf.collect(hexgrid, collisiongeojson, '_id', 'values')
+
+console.log(collishex)
+
+let maxcollis = 0;
+
+collishex.features.forEach((feature) => {
+    feature.properties.COUNT = feature.properties.values.length
+    if (feature.properties.COUNT > maxcollis) {
+        maxcollis = feature.properties.COUNT
+    }
+});
+
+console.log(maxcollis);
 
 
 // /*--------------------------------------------------------------------
@@ -81,3 +129,4 @@ Step 4: AGGREGATE COLLISIONS BY HEXGRID
 //      Add a legend and additional functionality including pop-up windows
 
 
+});
