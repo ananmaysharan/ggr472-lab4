@@ -123,4 +123,44 @@ map.on('load', () => {
         }
     });
 
+
+    //Declare arrayy variables for labels and colours
+const legendlabels = [
+    '0-100,000',
+    '100,000-500,000',
+    '500,000-1,000,000',
+    '1,000,000-5,000,000',
+    '>5,000,000'
+];
+
+const legendcolours = [
+    '#fd8d3c',
+    '#fc4e2a',
+    '#e31a1c',
+    '#bd0026',
+    '#800026'
+];
+
+//Declare legend variable using legend div tag
+const legend = document.getElementById('legend');
+
+//For each layer create a block to put the colour and label in
+legendlabels.forEach((label, i) => {
+    const color = legendcolours[i];
+
+    const item = document.createElement('div'); //each layer gets a 'row' - this isn't in the legend yet, we do this later
+    const key = document.createElement('span'); //add a 'key' to the row. A key will be the color circle
+
+    key.className = 'legend-key'; //the key will take on the shape and style properties defined in css
+    key.style.backgroundColor = color; // the background color is retreived from teh layers array
+
+    const value = document.createElement('span'); //add a value variable to the 'row' in the legend
+    value.innerHTML = `${label}`; //give the value variable text based on the label
+
+    item.appendChild(key); //add the key (color cirlce) to the legend row
+    item.appendChild(value); //add the value to the legend row
+
+    legend.appendChild(item); //add row to the legend
+});
+
 });
