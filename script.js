@@ -2,7 +2,6 @@
 GGR472 LAB 4: Incorporating GIS Analysis into web maps using Turf.js 
 --------------------------------------------------------------------*/
 
-
 /*--------------------------------------------------------------------
 Step 1: INITIALIZE MAP
 --------------------------------------------------------------------*/
@@ -13,8 +12,8 @@ mapboxgl.accessToken = 'pk.eyJ1IjoiYW5hbm1heSIsImEiOiJjbDk0azNmY3oxa203M3huMzhyZ
 const map = new mapboxgl.Map({
     container: 'map', //container id in HTML
     style: 'mapbox://styles/mapbox/dark-v11',  //****ADD MAP STYLE HERE *****
-    center: [-79.39, 43.65],  // starting point, longitude/latitude
-    zoom: 9 // starting zoom level
+    center: [-79.37, 43.71],  // starting point, longitude/latitude
+    zoom: 10.5 // starting zoom level
 });
 
 map.addControl(new mapboxgl.NavigationControl());
@@ -104,6 +103,7 @@ map.on('load', () => {
         data: collishex
     });
 
+    console.log(collishex)
 
     const colorScheme = d3.schemeBlues[5];
 
@@ -119,48 +119,37 @@ map.on('load', () => {
                 0, colorScheme[0],
                 maxcollis, colorScheme[colorScheme.length - 1]
             ],
-            'fill-opacity': 0.5
+            'fill-opacity': 0.3
         }
     });
+    
+
+    map.on('click', 'collis-hexgrid', (e) => {
+        const count = e.features[0].properties.COUNT;
+    
+        new mapboxgl.Popup()
+            .setLngLat(e.lngLat)
+            .setHTML("Number of Collisions: " + count)
+            .addTo(map);
+    });
+    
+    // Change the cursor to a pointer when hovering over the fill layer
+    map.on('mouseenter', 'fill-layer', function () {
+        map.getCanvas().style.cursor = 'pointer';
+    });
+    
+    // Change the cursor back to the default when no longer hovering over the fill layer
+    map.on('mouseleave', 'fill-layer', function () {
+        map.getCanvas().style.cursor = '';
+    });
+    
 
 
-    //Declare arrayy variables for labels and colours
-const legendlabels = [
-    '0-100,000',
-    '100,000-500,000',
-    '500,000-1,000,000',
-    '1,000,000-5,000,000',
-    '>5,000,000'
-];
+    const minLabel = document.querySelector('.minlabel');
+    const maxLabel = document.querySelector('.maxlabel');
 
-const legendcolours = [
-    '#fd8d3c',
-    '#fc4e2a',
-    '#e31a1c',
-    '#bd0026',
-    '#800026'
-];
-
-//Declare legend variable using legend div tag
-const legend = document.getElementById('legend');
-
-//For each layer create a block to put the colour and label in
-legendlabels.forEach((label, i) => {
-    const color = legendcolours[i];
-
-    const item = document.createElement('div'); //each layer gets a 'row' - this isn't in the legend yet, we do this later
-    const key = document.createElement('span'); //add a 'key' to the row. A key will be the color circle
-
-    key.className = 'legend-key'; //the key will take on the shape and style properties defined in css
-    key.style.backgroundColor = color; // the background color is retreived from teh layers array
-
-    const value = document.createElement('span'); //add a value variable to the 'row' in the legend
-    value.innerHTML = `${label}`; //give the value variable text based on the label
-
-    item.appendChild(key); //add the key (color cirlce) to the legend row
-    item.appendChild(value); //add the value to the legend row
-
-    legend.appendChild(item); //add row to the legend
-});
+    minLabel.textContent = '0';
+    maxLabel.textContent = maxcollis;
 
 });
+
