@@ -2,20 +2,20 @@
 GGR472 LAB 4: Incorporating GIS Analysis into web maps using Turf.js 
 --------------------------------------------------------------------*/
 
-/*--------------------------------------------------------------------
-Step 1: INITIALIZE MAP
---------------------------------------------------------------------*/
-//Define access token
+
+//Access token
 mapboxgl.accessToken = 'pk.eyJ1IjoiYW5hbm1heSIsImEiOiJjbDk0azNmY3oxa203M3huMzhyZndlZDRoIn0.1L-fBYplQMuwz0LGctNeiA'; //****ADD YOUR PUBLIC ACCESS TOKEN*****
 
-//Initialize map and edit to your preference
+//Initialize map 
 const map = new mapboxgl.Map({
-    container: 'map', //container id in HTML
-    style: 'mapbox://styles/mapbox/dark-v11',  //****ADD MAP STYLE HERE *****
+    container: 'map', //container id 
+    style: 'mapbox://styles/mapbox/dark-v11',
     center: [-79.37, 43.71],  // starting point, longitude/latitude
     zoom: 10.5 // starting zoom level
 });
 
+
+//Adding control
 map.addControl(new mapboxgl.NavigationControl());
 
 
@@ -27,8 +27,10 @@ fetch('https://raw.githubusercontent.com/ananmaysharan/ggr472-lab4/main/data/ped
         collisiongeojson = response; // Store geojson as variable using URL from fetch response
     });
 
+//Map Load
 map.on('load', () => {
 
+    //Bounding box and hexgrid creation
     bbox = turf.envelope(collisiongeojson)
 
     bboxTransformed = turf.transformScale(bbox, 1.1)
@@ -38,6 +40,7 @@ map.on('load', () => {
         "features": [bboxTransformed]
     }
 
+    //coords
     const minX = bboxTransformed.geometry.coordinates[0][0][0];
     const minY = bboxTransformed.geometry.coordinates[0][0][1];
     const maxX = bboxTransformed.geometry.coordinates[0][2][0];
@@ -49,18 +52,20 @@ map.on('load', () => {
 
     let collishex = turf.collect(hexgrid, collisiongeojson, '_id', 'values')
 
-    console.log(collishex)
+    //console.log(collishex)
 
     let maxcollis = 0;
 
-    collishex.features.forEach((feature) => {
-        feature.properties.COUNT = feature.properties.values.length
-        if (feature.properties.COUNT > maxcollis) {
-            maxcollis = feature.properties.COUNT
+
+    //adding count for loop
+    collishex.features.forEach((feature) => { //iterate through features
+        feature.properties.COUNT = feature.properties.values.length //create new property count to be the length of the values array
+        if (feature.properties.COUNT > maxcollis) { //if the count of this feature is greater than the current max number collisions
+            maxcollis = feature.properties.COUNT //set the max collisions variable to be the count for this feature 
         }
     });
 
-    console.log(maxcollis);
+    //console.log(maxcollis);
 
 
     //Add datasource using GeoJSON variable
@@ -98,13 +103,16 @@ map.on('load', () => {
     // console.log(bboxTransformed)
     // console.log(bboxgeojson)
 
+    //adding hexgrid
     map.addSource('collis-hexgrid', {
         type: 'geojson',
         data: collishex
     });
 
-    console.log(collishex)
+    //console.log(collishex)
 
+
+    //adding colorscheme and styling hexgrid
     const colorScheme = d3.schemeBlues[5];
 
     map.addLayer({
@@ -123,19 +131,18 @@ map.on('load', () => {
         }
     });
     
-
+    //adding popup
     map.on('click', 'collis-hexgrid', (e) => {
         const count = e.features[0].properties.COUNT;
+        const coordinates = e.features[0].geometry.coordinates.slice();
     
         new mapboxgl.Popup()
             .setLngLat(e.lngLat)
             .setHTML("Number of Collisions: " + count)
             .addTo(map);
 
-        map.flyTo({center: e.features[0].geometry.coordinates, zoom:15});
-
     });
-    
+
     // Change the cursor to a pointer when hovering over the fill layer
     map.on('mouseenter', 'fill-layer', function () {
         map.getCanvas().style.cursor = 'pointer';
@@ -146,8 +153,7 @@ map.on('load', () => {
         map.getCanvas().style.cursor = '';
     });
     
-
-
+    //adding legend labels
     const minLabel = document.querySelector('.minlabel');
     const maxLabel = document.querySelector('.maxlabel');
 
