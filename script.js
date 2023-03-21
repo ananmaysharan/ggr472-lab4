@@ -131,6 +131,9 @@ map.on('load', () => {
             .setLngLat(e.lngLat)
             .setHTML("Number of Collisions: " + count)
             .addTo(map);
+
+        map.flyTo({center: e.features[0].geometry.coordinates, zoom:15});
+
     });
     
     // Change the cursor to a pointer when hovering over the fill layer
