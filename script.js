@@ -18,7 +18,6 @@ const map = new mapboxgl.Map({
 //Adding control
 map.addControl(new mapboxgl.NavigationControl());
 
-
 // Fetch GeoJSON from URL and store response
 // fetch('https://raw.githubusercontent.com/ananmaysharan/ggr472-lab4/main/data/pedcyc_collision_06-21.geojson')
 //     .then(response => response.json())
@@ -27,29 +26,27 @@ map.addControl(new mapboxgl.NavigationControl());
 //         collisiongeojson = response; // Store geojson as variable using URL from fetch response
 //     });
 
+fetch('https://raw.githubusercontent.com/ananmaysharan/ggr472-lab4/hexgrid-testing/canfed.geojson')
+    .then(response => response.json())
+    .then(response => {
+        console.log(response)
+        canfedgeojson = response; // Store geojson as variable using URL from fetch response
+    });
 
 //Map Load
 map.on('load', () => {
 
-    fetch('https://raw.githubusercontent.com/ananmaysharan/ggr472-group-project/main/canfed.geojson')
-    .then(response => response.json())
-    .then(response => {
-        // console.log(response); //Check response in console
-        canfedgeojson = response; // Store geojson as variable using URL from fetch response
-    });
-
-
     //Bounding box and hexgrid creation
     bbox2 = turf.envelope(canfedgeojson)
-    bbox = turf.envelope(collisiongeojson)
+    // bbox = turf.envelope(collisiongeojson)
 
-    bboxTransformed = turf.transformScale(bbox, 1.1)
+    // bboxTransformed = turf.transformScale(bbox, 1.1)
     bboxTransformed2 = turf.transformScale(bbox2, 1.1)
 
-    bboxgeojson = {
-        "type": "FeatureCollection",
-        "features": [bboxTransformed]
-    }
+    // bboxgeojson = {
+    //     "type": "FeatureCollection",
+    //     "features": [bboxTransformed]
+    // }
 
     bboxgeojson2 = {
         "type": "FeatureCollection",
@@ -57,24 +54,24 @@ map.on('load', () => {
     }
 
     //coords
-    const minX = bboxTransformed.geometry.coordinates[0][0][0];
-    const minY = bboxTransformed.geometry.coordinates[0][0][1];
-    const maxX = bboxTransformed.geometry.coordinates[0][2][0];
-    const maxY = bboxTransformed.geometry.coordinates[0][2][1];
+    // const minX = bboxTransformed.geometry.coordinates[0][0][0];
+    // const minY = bboxTransformed.geometry.coordinates[0][0][1];
+    // const maxX = bboxTransformed.geometry.coordinates[0][2][0];
+    // const maxY = bboxTransformed.geometry.coordinates[0][2][1];
 
     const minX2 = bboxTransformed2.geometry.coordinates[0][0][0];
     const minY2 = bboxTransformed2.geometry.coordinates[0][0][1];
     const maxX2 = bboxTransformed2.geometry.coordinates[0][2][0];
     const maxY2 = bboxTransformed2.geometry.coordinates[0][2][1];
 
-    let bboxcords = [minX, minY, maxX, maxY]
+    // let bboxcords = [minX, minY, maxX, maxY]
     let bboxcords2 = [minX2, minY2, maxX2, maxY2]
 
-    const hexgrid = turf.hexGrid(bboxcords, 0.4, { units: 'kilometres' });
+    // const hexgrid = turf.hexGrid(bboxcords, 0.4, { units: 'kilometres' });
     const hexgrid_two = turf.hexGrid(bboxcords2, 0.4, { units: 'kilometres' });
 
-    let collishex = turf.collect(hexgrid, collisiongeojson, '_id', 'values');
-    let canfedhex = turf.collect(hexgrid_two, canfedgeojson, 'field1', 'values');
+    // let collishex = turf.collect(hexgrid, collisiongeojson, '_id', 'values');
+    // let canfedhex = turf.collect(hexgrid_two, canfedgeojson, 'field1', 'values');
 
 
     //console.log(collishex)
@@ -84,21 +81,19 @@ map.on('load', () => {
 
 
     //adding count for loop
-    collishex.features.forEach((feature) => { //iterate through features
-        feature.properties.COUNT = feature.properties.values.length //create new property count to be the length of the values array
-        if (feature.properties.COUNT > maxcollis) { //if the count of this feature is greater than the current max number collisions
-            maxcollis = feature.properties.COUNT //set the max collisions variable to be the count for this feature 
-        }
-    });
+    // collishex.features.forEach((feature) => { //iterate through features
+    //     feature.properties.COUNT = feature.properties.values.length //create new property count to be the length of the values array
+    //     if (feature.properties.COUNT > maxcollis) { //if the count of this feature is greater than the current max number collisions
+    //         maxcollis = feature.properties.COUNT //set the max collisions variable to be the count for this feature 
+    //     }
+    // });
 
-    canfedhex.features.forEach((feature) => { //iterate through features
-        feature.properties.COUNT = feature.properties.values.length //create new property count to be the length of the values array
-        if (feature.properties.COUNT > maxcanfed) { //if the count of this feature is greater than the current max number collisions
-            maxcanfed = feature.properties.COUNT //set the max collisions variable to be the count for this feature 
-        }
-    });
-
-
+    // canfedhex.features.forEach((feature) => { //iterate through features
+    //     feature.properties.COUNT = feature.properties.values.length //create new property count to be the length of the values array
+    //     if (feature.properties.COUNT > maxcanfed) { //if the count of this feature is greater than the current max number collisions
+    //         maxcanfed = feature.properties.COUNT //set the max collisions variable to be the count for this feature 
+    //     }
+    // });
 
 
     //console.log(maxcollis);
@@ -107,7 +102,7 @@ map.on('load', () => {
     //Add datasource using GeoJSON variable
     map.addSource('toronto-col', {
         type: 'geojson',
-        data: canfedgeojson
+        data: hexgrid_two
     });
 
     map.addLayer({
@@ -140,10 +135,10 @@ map.on('load', () => {
     // console.log(bboxgeojson)
 
     //adding hexgrid
-    map.addSource('collis-hexgrid', {
-        type: 'geojson',
-        data: collishex
-    });
+    // map.addSource('collis-hexgrid', {
+    //     type: 'geojson',
+    //     data: collishex
+    // });
 
     map.addSource('canfed-hexgrid', {
         type: 'geojson',
@@ -156,41 +151,31 @@ map.on('load', () => {
     //adding colorscheme and styling hexgrid
     const colorScheme = d3.schemeBlues[5];
 
-    map.addLayer({
-        'id': 'collis-hexgrid',
-        'type': 'fill',
-        'source': 'collis-hexgrid',
-        'paint': {
-            'fill-color': [
-                'interpolate',
-                ['linear'],
-                ['get', 'COUNT'],
-                0, colorScheme[0],
-                maxcollis, colorScheme[colorScheme.length - 1]
-            ],
-            'fill-opacity': 0.3
-        },
-        'layout': {
-            'visibility': 'none',
-        }
-    });
+    // map.addLayer({
+    //     'id': 'collis-hexgrid',
+    //     'type': 'fill',
+    //     'source': 'collis-hexgrid',
+    //     'paint': {
+    //         'fill-color': [
+    //             'interpolate',
+    //             ['linear'],
+    //             ['get', 'COUNT'],
+    //             0, colorScheme[0],
+    //             maxcollis, colorScheme[colorScheme.length - 1]
+    //         ],
+    //         'fill-opacity': 0.3
+    //     },
+    //     'layout': {
+    //         'visibility': 'none',
+    //     }
+    // });
 
     map.addLayer({
         'id': 'canfed-hexgrid',
         'type': 'fill',
         'source': 'canfed-hexgrid',
         'paint': {
-            'fill-color': [
-                'interpolate',
-                ['linear'],
-                ['get', 'COUNT'],
-                0, colorScheme[0],
-                maxcanfed, colorScheme[colorScheme.length - 1]
-            ],
-            'fill-opacity': 0.3
-        },
-        'layout': {
-            'visibility': 'visible',
+            'fill-color': '#fefefe'
         }
     });
     
